@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>TeslaCam 本地查看器</title>
+    <link rel="stylesheet" href="/assets/app.css?v=1.2.0">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" data-icon="car"></span>
+          <span class="brand-copy">
+            <strong>TeslaCam</strong>
+            <span>本地查看器</span>
+          </span>
+        </div>
+        <div class="source-status" id="sourceStatus" title="当前数据来源">
+          <span class="status-dot"></span>
+          <span id="sourceStatusText">等待选择 U 盘</span>
+        </div>
+        <div class="top-actions">
+          <button class="button button-quiet" id="refreshButton" type="button" disabled>
+            <span data-icon="refresh"></span>
+            <span class="button-label">重新读取</span>
+          </button>
+          <button class="button button-primary" id="chooseButton" type="button">
+            <span data-icon="folder-open"></span>
+            <span class="button-label">选择目录</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="library-panel" id="libraryPanel">
+          <div class="library-heading">
+            <div>
+              <h2>时间节点</h2>
+              <p id="librarySummary">尚未读取</p>
+            </div>
+            <span class="library-count" id="libraryCount">0</span>
+          </div>
+
+          <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="视频分类">
+            <button class="category-tab is-active" data-category="all" type="button">全部</button>
+            <button class="category-tab" data-category="sentry" type="button">哨兵</button>
+            <button class="category-tab" data-category="saved" type="button">已保存</button>
+            <button class="category-tab" data-category="recent" type="button">最近</button>
+          </div>
+
+          <label class="search-field" for="searchInput">
+            <span data-icon="search"></span>
+            <input id="searchInput" type="search" placeholder="搜索日期或时间" autocomplete="off">
+          </label>
+
+          <div class="event-list" id="eventList">
+            <div class="sidebar-placeholder">
+              <span data-icon="hard-drive"></span>
+              <span>选择 TeslaCam 目录后显示</span>
+            </div>
+          </div>
+        </aside>
+
+        <main class="viewer">
+          <section class="setup-view" id="setupView">
+            <div class="setup-header">
+              <div>
+                <span class="eyebrow">电脑直接读取</span>
+                <h1>选择 TeslaCam 文件夹</h1>
+              </div>
+              <span class="local-badge">
+                <span data-icon="shield"></span>
+                本地运行
+              </span>
+            </div>
+
+            <div class="path-entry">
+              <label for="rootInput">U 盘路径</label>
+              <div class="path-entry-row">
+                <input id="rootInput" type="text" spellcheck="false" placeholder="例如 E:\ 或 E:\TeslaCam">
+                <button class="button button-primary" id="scanButton" type="button">
+                  <span data-icon="scan"></span>
+                  读取
+                </button>
+              </div>
+            </div>
+
+            <div class="drive-section">
+              <div class="section-line">
+                <h3>检测到的磁盘</h3>
+                <button class="text-button" id="rescanDrivesButton" type="button">刷新</button>
+              </div>
+              <div class="drive-list" id="driveList">
+                <div class="loading-line">
+                  <span class="spinner"></span>
+                  正在检测
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="viewer-content" id="viewerContent" hidden>
+            <header class="event-header">
+              <div class="event-title-group">
+                <span class="event-category" id="eventCategory">哨兵模式</span>
+                <h1 id="eventTitle">哨兵事件</h1>
+                <div class="event-meta">
+                  <span><span data-icon="calendar"></span><span id="eventDate"></span></span>
+                  <span><span data-icon="clock"></span><span id="eventTime"></span></span>
+                  <span><span data-icon="layers"></span><span id="eventSegments"></span></span>
+                </div>
+              </div>
+              <div class="event-actions">
+                <button class="button button-quiet" id="exportButton" type="button">
+                  <span data-icon="download"></span>
+                  导出事件
+                </button>
+              </div>
+            </header>
+
+            <div class="incident-strip" id="incidentStrip" hidden>
+              <div class="incident-main">
+                <span class="incident-icon" data-icon="flag"></span>
+                <span class="incident-copy">
+                  <span>案件时间点</span>
+                  <strong id="incidentTime"></strong>
+                </span>
+              </div>
+              <span class="incident-meta" id="incidentMeta"></span>
+              <button class="incident-jump" id="incidentJumpButton" type="button">
+                <span data-icon="crosshair"></span>
+                跳转事件点
+              </button>
+            </div>
+
+            <div class="camera-toolbar">
+              <div class="camera-layout" id="cameraLayout" aria-label="摄像头布局">
+                <button class="layout-button is-active" data-layout="all" type="button">
+                  <span data-icon="grid"></span>
+                  全部镜头
+                </button>
+                <button class="layout-button" data-layout="four" type="button">
+                  <span data-icon="columns"></span>
+                  四路视图
+                </button>
+              </div>
+              <span class="sync-label">
+                <span data-icon="link"></span>
+                同步播放
+              </span>
+            </div>
+
+            <div class="camera-stage" id="cameraStage">
+              <div class="video-grid" id="videoGrid"></div>
+              <div class="stage-empty" id="stageEmpty" hidden>
+                <span data-icon="video-off"></span>
+                <span>这个时间节点没有视频</span>
+              </div>
+            </div>
+
+            <div class="transport">
+              <button class="icon-button" id="previousButton" type="button" aria-label="上一个时间节点" title="上一个时间节点">
+                <span data-icon="skip-back"></span>
+              </button>
+              <button class="play-button" id="playButton" type="button" aria-label="播放" title="播放 / 暂停">
+                <span id="playIcon" data-icon="play"></span>
+              </button>
+              <button class="icon-button" id="nextButton" type="button" aria-label="下一个时间节点" title="下一个时间节点">
+                <span data-icon="skip-forward"></span>
+              </button>
+              <span class="time-code" id="timeCode">00:00:00</span>
+              <div class="progress-wrap">
+                <input class="progress" id="progressInput" type="range" min="0" max="1000" value="0" aria-label="播放进度">
+              </div>
+              <span class="time-code time-code-total" id="durationCode">00:00:00</span>
+              <label class="rate-control" title="播放速度">
+                <select id="rateSelect" aria-label="播放速度">
+                  <option value="0.5">0.5×</option>
+                  <option value="1" selected>1×</option>
+                  <option value="1.5">1.5×</option>
+                  <option value="2">2×</option>
+                </select>
+              </label>
+              <button class="icon-button" id="fullscreenButton" type="button" aria-label="全屏" title="全屏">
+                <span data-icon="maximize"></span>
+              </button>
+            </div>
+
+            <section class="segment-section" id="segmentSection">
+              <div class="segment-heading">
+                <div>
+                  <h2>事件时间轴</h2>
+                  <p id="segmentSummary"></p>
+                </div>
+                <div class="segment-position" id="segmentPosition">1 / 1</div>
+              </div>
+              <div class="segment-track" id="segmentTrack"></div>
+            </section>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+    <template id="eventItemTemplate">
+      <button class="event-item" type="button">
+        <span class="event-thumb">
+          <img alt="">
+          <span class="event-thumb-fallback" data-icon="car"></span>
+        </span>
+        <span class="event-item-copy">
+          <span class="event-item-top">
+            <span class="event-pill"></span>
+            <span class="event-item-duration"></span>
+          </span>
+          <strong class="event-item-time"></strong>
+          <span class="event-item-detail"></span>
+        </span>
+        <span class="event-chevron" data-icon="chevron-right"></span>
+      </button>
+    </template>
+
+    <template id="segmentTemplate">
+      <button class="segment-chip" type="button">
+        <span class="segment-chip-time"></span>
+        <span class="segment-chip-detail"></span>
+      </button>
+    </template>
+
+    <script src="/assets/app.js?v=1.2.0"></script>
+  </body>
+</html>
